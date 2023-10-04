@@ -1,5 +1,6 @@
 import time
-import numpy
+#import numpy
+import random
 
 def bubbleSort(A) :
     l = len(A)
@@ -13,7 +14,7 @@ def bubbleSort(A) :
                 A[index] = A[index+1]
                 A[index+1] = tmp
                 sorted = False
-        last = last -1 # A small optomisation
+        last = last -1 # A small optomization
 
 
 # MergeSort in Python
@@ -129,10 +130,9 @@ def inPlaceQuickSort(data,low,high):
 
 # function to test sorting
 def sorting_test(alg_no,orig):
-    data = numpy.array(orig).tolist() 
-
+    #data = numpy.array(orig).tolist() 
+    data=orig[:] # copy the original list
     t0 = time.perf_counter() # get time before sorting
-
     if alg_no == 1:
         bubbleSort(data)
     elif alg_no == 2:
@@ -141,6 +141,8 @@ def sorting_test(alg_no,orig):
         mergeSort(data) # merge sort algorithm in code
     elif alg_no == 4:
         data.sort()   # standard sort provided by pythons
+    else:
+        print("No algorithm selected")
     # data = numpy.sort(orig, kind='mergesort') # mergesort algorithm
     # data = numpy.sort(orig, kind='quicksort') # quicksort algorithm
     # data = numpy.sort(orig, kind='heapsort')  # heapsort algorithm
@@ -151,15 +153,17 @@ def sorting_test(alg_no,orig):
     print("Size ",len(data),"time taken ", f'{diff:6f}')
 
     orig.sort()
-    if not (data == orig).all():
+    if not (data == orig):
         print("Not correctly sorted")
+        print(data)
+        print(orig)
 
 
 # Now lets see how long its takes to sort arrays of different sizes
 
 data = [21,24,42,29,23,13,8,39,38]
 print("sorting",data)
-inPlaceQuickSort(data,0,len(data)-1)
+bubbleSort(data)
 print("sorted",data)
 
 data = [37,20,17,26,44,41,27,28,50,17]
@@ -170,10 +174,22 @@ print("sorted",data)
 
 #exit(0)
 
-num_eles = 1
-for size in range(15):
-    num_eles = num_eles * 2             # double size each time
-    data = numpy.random.rand(num_eles)  # generate a random array
-    sorting_test(data)                  # run the test
+#num_eles = 1
+#for size in range(15):
+#    num_eles = num_eles * 2             # double size each time
+#    data = numpy.random.rand(num_eles)  # generate a random array
+#    sorting_test(1,data)                  # run the test
 
-
+print("Select the type of sort:")
+print("  1 - bubble sort")
+print("  2 - quick sort")
+print("  3 - merge sort")
+print("  4 - python's default sort")
+code = int(input("Enter code "))
+while True:
+    num_eles = int(input("Enter number of elements up to 10000, -1 to exit "))
+    if num_eles == -1:
+        break
+    #data = numpy.random.rand(num_eles)  # generate a random array
+    data = [random.random() for x in range(num_eles)]
+    sorting_test(code,data)                  # run the test
