@@ -1,5 +1,4 @@
 import time
-#import numpy
 import random
 
 def bubbleSort(A) :
@@ -14,7 +13,7 @@ def bubbleSort(A) :
                 A[index] = A[index+1]
                 A[index+1] = tmp
                 sorted = False
-        last = last -1 # A small optomization
+        last = last -1 # A small optimisation
 
 
 # MergeSort in Python
@@ -93,7 +92,7 @@ def quickSort(data,low,high):
     quickSort(data,low,pivotPos)
     quickSort(data,pivotPos+1,high)
 
-# sort the items in data inplace 
+# sort the items in data in-place 
 # between index low and index high
 def inPlaceQuickSort(data,low,high):
     # print("sorting between",low,high)
@@ -127,10 +126,55 @@ def inPlaceQuickSort(data,low,high):
     inPlaceQuickSort(data,low,j)
     inPlaceQuickSort(data,j+1,high)
 
+class Node:
+    def __init__(self): # sets up a Node with all variable none
+        self.value = None
+        self.left = None
+        self.right = None
+
+    def addItem(self,value):
+        if self.value == None:  # if value not set for this node
+            self.value = value  # use that value
+        elif value < self.value:    # if the value is less than this node
+                                    # add on left
+            if self.left==None:     # if left node does not exist
+                self.left = Node()  # make it
+            self.left.addItem(value) # add item on the left
+        else:
+            if self.right==None:
+                self.right=Node()
+            self.right.addItem(value)
+
+    def printTree(self):
+        if self.left != None:
+            self.left.printTree()
+        print(self.value,end=', ')
+        if self.right != None:
+            self.right.printTree()
+            
+    def buildList(self,list):
+        if self.left != None:
+            self.left.buildList(list)
+        list.append(self.value)
+        if self.right != None:
+            self.right.buildList(list)
+        
+        
+def treeSort(data):
+
+    rootNode = Node()   # The base of the tree
+
+    for item in data:
+        rootNode.addItem(item)
+    res = []
+    rootNode.buildList(res)
+    return res
+    
+
+        
 
 # function to test sorting
 def sorting_test(alg_no,orig):
-    #data = numpy.array(orig).tolist() 
     data=orig[:] # copy the original list
     t0 = time.perf_counter() # get time before sorting
     if alg_no == 1:
@@ -141,13 +185,14 @@ def sorting_test(alg_no,orig):
         mergeSort(data) # merge sort algorithm in code
     elif alg_no == 4:
         data.sort()   # standard sort provided by pythons
+    elif alg_no == 5:
+        data = treeSort(orig)
     else:
         print("No algorithm selected")
-    # data = numpy.sort(orig, kind='mergesort') # mergesort algorithm
-    # data = numpy.sort(orig, kind='quicksort') # quicksort algorithm
-    # data = numpy.sort(orig, kind='heapsort')  # heapsort algorithm
-    # data = numpy.sort(orig, kind='stable')    # stable 
-
+    if len(data) <= 10:
+        print("Original data",orig)
+        print("Sorted data  ",data)
+        
     t1 = time.perf_counter()
     diff = t1 - t0
     print("Size ",len(data),"time taken ", f'{diff:6f}')
@@ -161,35 +206,17 @@ def sorting_test(alg_no,orig):
 
 # Now lets see how long its takes to sort arrays of different sizes
 
-data = [21,24,42,29,23,13,8,39,38]
-print("sorting",data)
-bubbleSort(data)
-print("sorted",data)
-
-data = [37,20,17,26,44,41,27,28,50,17]
-print("sorting",data)
-inPlaceQuickSort(data,0,len(data)-1)
-print("sorted",data)
-
-
-#exit(0)
-
-#num_eles = 1
-#for size in range(15):
-#    num_eles = num_eles * 2             # double size each time
-#    data = numpy.random.rand(num_eles)  # generate a random array
-#    sorting_test(1,data)                  # run the test
-
 print("Select the type of sort:")
 print("  1 - bubble sort")
 print("  2 - quick sort")
 print("  3 - merge sort")
 print("  4 - python's default sort")
+print("  5 - tree sort")
 code = int(input("Enter code "))
 while True:
     num_eles = int(input("Enter number of elements up to 10000, -1 to exit "))
     if num_eles == -1:
         break
-    #data = numpy.random.rand(num_eles)  # generate a random array
-    data = [random.random() for x in range(num_eles)]
+    # generate a random array, uses Pythons List Comprehension syntax
+    data = [random.randint(1,100000) for x in range(num_eles)]
     sorting_test(code,data)                  # run the test
