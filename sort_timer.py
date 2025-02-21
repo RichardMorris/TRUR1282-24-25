@@ -55,43 +55,17 @@ def mergeSort(array):
             j += 1
             k += 1
 
-# sort the items in data between index low and index high
-def quickSort(data,low,high):
-    # don't sort if single element
-    if high <= low+1:
-        return
-
-    # find the mid point
-    pivotPos = int((low+high) / 2)
-    pivotVal = data[pivotPos]
-
-    # split data into those less than the pivot
-    lowvals =[]
-    highvals =[]
-
-    for i in range(low,high):
-        if i == pivotPos:
-            continue
-        if data[i] < pivotVal:
-            lowvals.append(data[i])
-        else:
-            highvals.append(data[i])
-
-    # now assemble the sorted data
-    index = low
-    for val in lowvals:
-        data[index] = val
-        index+=1
-    data[index] = pivotVal
-    pivotPos = index
-    index+=1
-    for val in highvals:
-        data[index] = val
-        index+=1
-
-    quickSort(data,low,pivotPos)
-    quickSort(data,pivotPos+1,high)
-
+def fivelinequicksort(data):
+    if(len(data)<1):
+        return []
+    pivotval = data[0]
+    low = [x for x in data if x < pivotval]
+    mid = [x for x in data if x == pivotval]
+    high = [x for x in data if x > pivotval]
+    qlow = fivelinequicksort(low)
+    qhigh = fivelinequicksort(high)
+    return qlow + mid + qhigh
+    
 # sort the items in data in-place 
 # between index low and index high
 def inPlaceQuickSort(data,low,high):
@@ -187,6 +161,8 @@ def sorting_test(alg_no,orig):
         data.sort()   # standard sort provided by pythons
     elif alg_no == 5:
         data = treeSort(orig)
+    elif alg_no == 6:
+        data = fivelinequicksort(orig)
     else:
         print("No algorithm selected")
     if len(data) <= 10:
@@ -212,6 +188,7 @@ print("  2 - quick sort")
 print("  3 - merge sort")
 print("  4 - python's default sort")
 print("  5 - tree sort")
+print("  6 - five line quicksort")
 code = int(input("Enter code "))
 while True:
     num_eles = int(input("Enter number of elements up to 10000, -1 to exit "))
