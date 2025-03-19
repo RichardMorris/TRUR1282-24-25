@@ -171,7 +171,44 @@ def treeSort(data):
     return res
     
 
-        
+def merge(left, right):
+    pl = 0
+    pr = 0  
+    res = []
+    while pl < len(left) and pr < len(right):
+        if left[pl] < right[pr]:
+            res.append(left[pl])
+            pl += 1
+        else:
+            res.append(right[pr])
+            pr += 1
+    while pl < len(left):
+        res.append(left[pl])
+        pl += 1
+    while pr < len(right):  
+        res.append(right[pr])
+        pr += 1 
+    return res
+
+def updown_sort(arr):
+    dir = 1
+    last = arr.pop(0)
+    res = [last]
+
+    work = []
+    for x in arr:
+        if ( dir == 1 and x >= last ) or ( dir == -1 and x <= last ):
+            work.append(x)
+        else:
+
+            if dir == -1:
+                work.reverse()
+            res = merge(res, work)
+            work = [x]
+            dir = - dir
+        last = x
+    res = merge(res, work)
+    return res
 
 # function to test sorting
 def sorting_test(alg_no,orig):
@@ -187,6 +224,8 @@ def sorting_test(alg_no,orig):
         data.sort()   # standard sort provided by pythons
     elif alg_no == 5:
         data = treeSort(orig)
+    elif alg_no == 6:
+        data = updown_sort(data)
     else:
         print("No algorithm selected")
     if len(data) <= 10:
@@ -212,6 +251,7 @@ print("  2 - quick sort")
 print("  3 - merge sort")
 print("  4 - python's default sort")
 print("  5 - tree sort")
+print("  6 - updown sort")
 code = int(input("Enter code "))
 while True:
     num_eles = int(input("Enter number of elements up to 10000, -1 to exit "))
