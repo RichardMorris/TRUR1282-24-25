@@ -198,11 +198,18 @@ def sorting_test(alg_no,orig):
         data.sort()   # standard sort provided by pythons
     elif alg_no == 5:
         data = treeSort(orig)
+    elif alg_no == 6:
+        data = fivelinequicksort(orig)
+    elif alg_no == 7:
+        data = updown_sort(data)
     else:
         print("No algorithm selected")
     if len(data) <= 10:
         print("Original data",orig)
         print("Sorted data  ",data)
+    else:
+        print("Original data",orig[:10],"...")
+        print("Data sorted",data[:10],"...")
         
     t1 = time.perf_counter()
     diff = t1 - t0
@@ -223,6 +230,8 @@ print("  2 - quick sort")
 print("  3 - merge sort")
 print("  4 - python's default sort")
 print("  5 - tree sort")
+print("  6 - five line quick sort")
+print("  7 - up-down sort")
 code = int(input("Enter code "))
 while True:
     num_eles = int(input("Enter number of elements up to 10000, -1 to exit "))
