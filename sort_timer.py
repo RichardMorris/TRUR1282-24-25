@@ -1,5 +1,6 @@
 import time
 import random
+import sys
 
 def bubbleSort(A) :
     l = len(A)
@@ -148,19 +149,31 @@ def treeSort(data):
 def merge(left, right):
     pl = 0
     pr = 0  
-    res = []
-    while pl < len(left) and pr < len(right):
+    res = [0 for x in range(len(left)+len(right))]
+    llen = len(left)
+    rlen = len(right)
+    index = 0
+    while pl < llen and pr < rlen:
         if left[pl] < right[pr]:
-            res.append(left[pl])
+            #res.append(left[pl])
+            res[index] = left[pl]
+            index += 1
             pl += 1
         else:
-            res.append(right[pr])
+            #res.append(right[pr])
+            res[index] = right[pr]
+            index += 1  
             pr += 1
-    while pl < len(left):
-        res.append(left[pl])
+    while pl < llen:
+        #res.append(left[pl])
+        res[index] = left[pl]
+        index += 1
         pl += 1
-    while pr < len(right):  
-        res.append(right[pr])
+    while pr < rlen:  
+        #res.append(right[pr])
+        res[index] = right[pr]
+        index += 1
+        
         pr += 1 
     return res
 
@@ -223,20 +236,27 @@ def sorting_test(alg_no,orig):
 
 
 # Now lets see how long its takes to sort arrays of different sizes
+if __name__ == '__main__':
 
-print("Select the type of sort:")
-print("  1 - bubble sort")
-print("  2 - quick sort")
-print("  3 - merge sort")
-print("  4 - python's default sort")
-print("  5 - tree sort")
-print("  6 - five line quick sort")
-print("  7 - up-down sort")
-code = int(input("Enter code "))
-while True:
-    num_eles = int(input("Enter number of elements up to 10000, -1 to exit "))
-    if num_eles == -1:
-        break
-    # generate a random array, uses Pythons List Comprehension syntax
-    data = [random.randint(1,100000) for x in range(num_eles)]
-    sorting_test(code,data)                  # run the test
+    if(len(sys.argv) == 3):
+        alg_no = int(sys.argv[1])
+        num_eles = int(sys.argv[2])
+        data = [random.randint(1,100000) for x in range(num_eles)]
+        sorting_test(alg_no,data)
+        sys.exit(0)
+    print("Select the type of sort:")
+    print("  1 - bubble sort")
+    print("  2 - quick sort")
+    print("  3 - merge sort")
+    print("  4 - python's default sort")
+    print("  5 - tree sort")
+    print("  6 - five line quick sort")
+    print("  7 - up-down sort")
+    code = int(input("Enter code "))
+    while True:
+        num_eles = int(input("Enter number of elements up to 10000, -1 to exit "))
+        if num_eles == -1:
+            break
+        # generate a random array, uses Pythons List Comprehension syntax
+        data = [random.randint(1,100000) for x in range(num_eles)]
+        sorting_test(code,data)                  # run the test
