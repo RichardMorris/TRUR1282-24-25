@@ -216,10 +216,9 @@ def updown_sort(arr):
 
     if dir == -1:
         work = arr[end-1:start-1:-1]
-        merge_queue(queue,work)
     else:
         work = arr[start:end]
-        merge_queue(queue,work)
+    merge_queue(queue,work)
 
     res = collapse_queue(queue)
     return res
@@ -299,13 +298,35 @@ def read_file(filename):
         list = ast.literal_eval(line2)
     return list
 
-# Now lets see how long its takes to sort arrays of different sizes
+def partial_sorted(n,maxsize):
+    res =[]
+    for i in range(0,n):
+        #size = random.randint(1,maxsize)
+        data = [random.randint(1,100000) for x in range(maxsize)]
+        data.sort()
+        res += data
+    return res
+
+def data_from_input(line):
+    if line.startswith("p"):
+        part = line.split(' ')
+        num_parts = int(part[1])
+        maxsize = int(part[2])
+        data = partial_sorted(num_parts,maxsize)
+    else:
+        num_eles = int(line)
+        # generate a random array, uses Pythons List Comprehension syntax
+        data = [random.randint(1,100000) for x in range(num_eles)]
+    return data
+
+
+
 if __name__ == '__main__':
 
     if(len(sys.argv) == 3):
         alg_no = int(sys.argv[1])
-        num_eles = int(sys.argv[2])
-        data = [random.randint(1,100000) for x in range(num_eles)]
+        line = sys.argv[2]
+        data = data_from_input(line)
         sorting_test(alg_no,data)
         sys.exit(0)
     if( len(sys.argv) == 4 ):
@@ -325,9 +346,9 @@ if __name__ == '__main__':
     print("  7 - up-down sort")
     code = int(input("Enter code "))
     while True:
-        num_eles = int(input("Enter number of elements up to 10000, -1 to exit "))
-        if num_eles == -1:
+
+        line  = input("Enter number of elements up to 10000, -1 to exit, p 10 50 for 10 sorted lists of 50 elements concatinated: ")
+        if line == "-1":
             break
-        # generate a random array, uses Pythons List Comprehension syntax
-        data = [random.randint(1,100000) for x in range(num_eles)]
+        data = data_from_input(line)
         sorting_test(code,data)                  # run the test
