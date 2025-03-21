@@ -1,6 +1,7 @@
 import time
 import random
 import sys
+import ast
 
 def bubbleSort(A) :
     l = len(A)
@@ -149,35 +150,81 @@ def treeSort(data):
 def merge(left, right):
     pl = 0
     pr = 0  
-    res = [0 for x in range(len(left)+len(right))]
     llen = len(left)
     rlen = len(right)
+    res = [0 for x in range(llen+rlen)]
     index = 0
     while pl < llen and pr < rlen:
         if left[pl] < right[pr]:
-            #res.append(left[pl])
             res[index] = left[pl]
             index += 1
             pl += 1
         else:
-            #res.append(right[pr])
             res[index] = right[pr]
             index += 1  
             pr += 1
     while pl < llen:
-        #res.append(left[pl])
         res[index] = left[pl]
         index += 1
         pl += 1
     while pr < rlen:  
-        #res.append(right[pr])
         res[index] = right[pr]
         index += 1
-        
         pr += 1 
     return res
 
+def merge_queue(queue, list):
+    """merger a list into a queue of lists
+    The qeues cointains lists of increasing length: [ [1], [2,3], [4,5,6,7] ]
+    if the incoming list [8,9] is added it is compared to each list in the queue
+    if the incoming list is longer than the list in the queue it is merged with the list
+    and the result is added to the queue
+    """
+    #print("Queue add",list) # for debugging 
+    while len(queue) > 0 and len(list) >= len(queue[0]):
+        list = merge(queue.pop(0),list)
+    queue.insert(0,list)
+    #print("Queue done",queue) # for debugging
+    return queue
+
+def collapse_queue(queue):
+    """ meger all the lists in the queue into a single list """
+    res = queue.pop(0)
+    while len(queue) > 0:
+        res = merge(res,queue.pop(0))
+    return res
+
 def updown_sort(arr):
+    dir = 1
+    last = arr[0]
+    queue = []
+    start = 0
+    end = 0
+    for x in arr:
+        if ( dir == 1 and x >= last ) or ( dir == -1 and x <= last ):
+            pass
+        else:
+            if dir == -1:
+                work = arr[end-1:start-1:-1]
+            else:
+                work = arr[start:end]
+            merge_queue(queue,work)
+            start = end
+            dir = - dir
+        last = x
+        end += 1
+
+    if dir == -1:
+        work = arr[end-1:start-1:-1]
+        merge_queue(queue,work)
+    else:
+        work = arr[start:end]
+        merge_queue(queue,work)
+
+    res = collapse_queue(queue)
+    return res
+
+def updown_sort_old(arr):
     dir = 1
     last = arr.pop(0)
     res = [last]
@@ -187,13 +234,14 @@ def updown_sort(arr):
         if ( dir == 1 and x >= last ) or ( dir == -1 and x <= last ):
             work.append(x)
         else:
-
             if dir == -1:
                 work.reverse()
             res = merge(res, work)
             work = [x]
             dir = - dir
         last = x
+    if dir == -1:
+        work.reverse()
     res = merge(res, work)
     return res
 
@@ -228,12 +276,28 @@ def sorting_test(alg_no,orig):
     diff = t1 - t0
     print("Size ",len(data),"time taken ", f'{diff:6f}')
 
-    orig.sort()
-    if not (data == orig):
+    copy = orig[:]
+    copy.sort()
+    if not (data == copy):
         print("Not correctly sorted")
-        print(data)
-        print(orig)
+        print("Original data",len(orig))
+        print("Sorted data  ",len(data))
+        with open("error.txt","w") as f:
+            f.write("Original data\n")
+            f.write(str(orig))
+            f.write("\nSorted data\n")
+            f.write(str(data))
+            f.write("\nPython sorted data\n")
+            f.write(str(copy))
+        sys.exit(1)
 
+def read_file(filename):
+    data = []
+    with open(filename) as f:
+        line1 = f.readline()
+        line2 = f.readline()
+        list = ast.literal_eval(line2)
+    return list
 
 # Now lets see how long its takes to sort arrays of different sizes
 if __name__ == '__main__':
@@ -244,6 +308,13 @@ if __name__ == '__main__':
         data = [random.randint(1,100000) for x in range(num_eles)]
         sorting_test(alg_no,data)
         sys.exit(0)
+    if( len(sys.argv) == 4 ):
+        num_eles = int(sys.argv[1])
+        num_eles = int(sys.argv[2])
+        data = read_file(sys.argv[3])
+        sorting_test(2,data)
+        sys.exit(0)
+
     print("Select the type of sort:")
     print("  1 - bubble sort")
     print("  2 - quick sort")
