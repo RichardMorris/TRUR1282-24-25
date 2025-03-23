@@ -2,6 +2,9 @@ import time
 import random
 import sys
 import ast
+from collections import deque
+
+MAXVAL = 100000
 
 def bubbleSort(A) :
     l = len(A)
@@ -148,12 +151,14 @@ def treeSort(data):
     
 
 def merge(left, right):
-    pl = 0
-    pr = 0  
+    """ merge two sorted arrays into a single sorted array """
     llen = len(left)
     rlen = len(right)
-    res = [0 for x in range(llen+rlen)]
-    index = 0
+    # fastest way the initilise a list
+    res = [0] * (llen+rlen) # result array of lenght llen+rlen
+    index = 0 # index into the result array
+    pl = 0 # index into the left array
+    pr = 0 # index into the right array 
     while pl < llen and pr < rlen:
         if left[pl] < right[pr]:
             res[index] = left[pl]
@@ -180,18 +185,63 @@ def merge_queue(queue, list):
     if the incoming list is longer than the list in the queue it is merged with the list
     and the result is added to the queue
     """
-    #print("Queue add",list) # for debugging 
     while len(queue) > 0 and len(list) >= len(queue[0]):
         list = merge(queue.pop(0),list)
     queue.insert(0,list)
-    #print("Queue done",queue) # for debugging
+    return queue
+
+def merge_queue3(queue, list):
+    """merger a list into a queue of lists
+    A possibly more efficient version of merge_queue, 
+    that aims to remove the O(n) operation pop(0) and insert(0, v).  
+    Here the entries in the queue are either a list or None.
+    When adding a list each element is tested in turn,
+    if its None it is replaced with the list and the function returns. 
+    If it is a list the element is replaced by Node
+    and element is merged into the incoming list.
+    If the end of the list is reached the incoming list is added to the queue.
+    In effect this mimics the behaviour of merge sort, with pairs of
+    elements megered in the first level, quartets in the second level etc.
+    It can also be through of as a binary tree, with items added at the bottom of the 
+    tree and the parent node containing the the result of merging
+    the two children. 
+
+    Consider repeatidly adding lists [a],[b],[c],[d].
+    The queue is intially empty [], after adding [a] it is [a].
+    After adding [b] it is [None,[ab]], first [b] is merged with [a]
+    the first element set to None, and the merged list [a,b]
+    added at the end of the queue. Adding [c] sets the first element to None
+    giving [[c],[ab]]. Adding [d] first merges it with [c], giving the list
+    [cd], the first element is set to None and
+    the second elements is tested. A second merge is performed and the result
+    [abcd] is added to end of the queue, giving a final queue of [None,None,[abcd]]
+    """
+    index = 0
+    for ele in queue:
+        if ele == None:
+            queue[index] = list
+            return queue
+        list = merge(ele,list)
+        queue[index] = None
+        index += 1    
+    queue.append(list)
     return queue
 
 def collapse_queue(queue):
     """ meger all the lists in the queue into a single list """
-    res = queue.pop(0)
-    while len(queue) > 0:
-        res = merge(res,queue.pop(0))
+    res = []
+    for ele in queue: 
+        res = merge(res,ele)
+    queue.clear()
+    return res
+
+def collapse_queue3(queue):
+    """ meger all the lists in the queue into a single list """
+    res = []
+    for ele in queue: 
+        if ele != None:
+            res = merge(res,ele)
+    queue.clear()
     return res
 
 def updown_sort(arr):
@@ -223,6 +273,35 @@ def updown_sort(arr):
     res = collapse_queue(queue)
     return res
 
+def updown_sort2(arr):
+    dir = 1
+    last = arr[0]
+    queue = []
+    start = 0
+    end = 0
+    for x in arr:
+        if ( dir == 1 and x >= last ) or ( dir == -1 and x <= last ):
+            pass
+        else:
+            if dir == -1:
+                work = arr[end-1:start-1:-1]
+            else:
+                work = arr[start:end]
+            merge_queue3(queue,work)
+            start = end
+            dir = - dir
+        last = x
+        end += 1
+
+    if dir == -1:
+        work = arr[end-1:start-1:-1]
+    else:
+        work = arr[start:end]
+    merge_queue3(queue,work)
+
+    res = collapse_queue3(queue)
+    return res
+
 def updown_sort_old(arr):
     dir = 1
     last = arr.pop(0)
@@ -244,6 +323,48 @@ def updown_sort_old(arr):
     res = merge(res, work)
     return res
 
+def cheat_sort(arr):
+    counts = [0] * (MAXVAL+1)
+    for x in arr:
+        counts[x] += 1
+    data = [0] * len(arr)
+    index = 0
+    for i in range(0,len(counts)):
+        for j in range(0,counts[i]):
+            data[index] = i
+            index += 1
+    return data
+
+def insert(data, value):
+    ldata = len(data)
+    if ldata == 0:
+        data.append(value)
+        return
+    if value <= data[0]:
+        data.insert(0,value)
+        return
+    prev = data[0]
+    for i in range(1,ldata):
+        if value <= data[i]:
+            data.insert(i,value)
+            return
+        prev = data[i]
+    data.append(value)
+
+    
+def heep_sort(arr,nbins):
+    bins = [ [] for x in range(nbins) ]
+    size = MAXVAL / nbins
+    for x in arr:
+        pos = int(x / size)
+        insert(bins[pos],x)
+    res = []
+    for b in bins:
+        res += b
+    return res
+
+
+
 # function to test sorting
 def sorting_test(alg_no,orig):
     data=orig[:] # copy the original list
@@ -262,6 +383,10 @@ def sorting_test(alg_no,orig):
         data = fivelinequicksort(orig)
     elif alg_no == 7:
         data = updown_sort(data)
+    elif alg_no == 8:
+        data = cheat_sort(data)
+    elif alg_no == 9:
+        data = updown_sort2(data)
     else:
         print("No algorithm selected")
     if len(data) <= 10:
@@ -316,7 +441,7 @@ def data_from_input(line):
     else:
         num_eles = int(line)
         # generate a random array, uses Pythons List Comprehension syntax
-        data = [random.randint(1,100000) for x in range(num_eles)]
+        data = [random.randint(1,MAXVAL) for x in range(num_eles)]
     return data
 
 
@@ -344,6 +469,7 @@ if __name__ == '__main__':
     print("  5 - tree sort")
     print("  6 - five line quick sort")
     print("  7 - up-down sort")
+    print("  8 - cheat sort")
     code = int(input("Enter code "))
     while True:
 
