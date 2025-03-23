@@ -384,9 +384,9 @@ def sorting_test(alg_no,orig):
     elif alg_no == 7:
         data = updown_sort(data)
     elif alg_no == 8:
-        data = cheat_sort(data)
-    elif alg_no == 9:
         data = updown_sort2(data)
+    elif alg_no == 9:
+        data = cheat_sort(data)
     else:
         print("No algorithm selected")
     if len(data) <= 10:
@@ -469,7 +469,8 @@ if __name__ == '__main__':
     print("  5 - tree sort")
     print("  6 - five line quick sort")
     print("  7 - up-down sort")
-    print("  8 - cheat sort")
+    print("  8 - up-down sort v2")
+    print("  9 - cheat sort")
     code = int(input("Enter code "))
     while True:
 
