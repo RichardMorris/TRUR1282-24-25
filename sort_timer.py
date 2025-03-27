@@ -238,7 +238,9 @@ class LengthQueueMerger(Merger):
         self.queue.clear()
         return res
 
-class dequeMerger(Merger):
+class DequeMerger(Merger):
+    """A versions of the LengthQueueMerger that uses a deque.
+    """
     def __init__(self):
         self.queue = deque()
 
@@ -303,6 +305,11 @@ class TreeQueueMerger(Merger):
         return res
 
 def updown_sort(arr,merger):
+    """Sort the array arr using the up-down sort algorithm and
+    a given merging algorithm.
+    Args:
+        arr: The array to sort.
+        merger: The merging algorithm to use.   """
     global max_queue_size
     dir = 1
     last = arr[0]
@@ -420,7 +427,7 @@ def sorting_test(alg_no,orig):
     elif alg_no == '7c':
         data = updown_sort(data,TreeQueueMerger())
     elif alg_no == '7d':
-        data = updown_sort(data,dequeMerger())
+        data = updown_sort(data,DequeMerger())
     elif alg_no == 8:
         data = cheat_sort(data)
     else:
