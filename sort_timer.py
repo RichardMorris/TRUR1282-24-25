@@ -39,7 +39,9 @@ def mergeSort(array):
 
         # Until we reach either end of either L or M, pick larger among
         # elements L and M and place them in the correct position at A[p..r]
-        while i < len(L) and j < len(M):
+        llen = len(L)
+        mlen = len(M)
+        while i < llen and j < mlen:
             if L[i] < M[j]:
                 array[k] = L[i]
                 i += 1
@@ -50,12 +52,12 @@ def mergeSort(array):
 
         # When we run out of elements in either L or M,
         # pick up the remaining elements and put in A[p..r]
-        while i < len(L):
+        while i < llen:
             array[k] = L[i]
             i += 1
             k += 1
 
-        while j < len(M):
+        while j < mlen:
             array[k] = M[j]
             j += 1
             k += 1
@@ -150,7 +152,7 @@ def treeSort(data):
     return res
     
 
-def merge(left, right):
+def mergeArrays(left, right):
     """ merge two sorted arrays into a single sorted array """
     llen = len(left)
     rlen = len(right)
@@ -178,19 +180,81 @@ def merge(left, right):
         pr += 1 
     return res
 
-def merge_queue(queue, list):
-    """merger a list into a queue of lists
-    The qeues cointains lists of increasing length: [ [1], [2,3], [4,5,6,7] ]
-    if the incoming list [8,9] is added it is compared to each list in the queue
-    if the incoming list is longer than the list in the queue it is merged with the list
-    and the result is added to the queue
-    """
-    while len(queue) > 0 and len(list) >= len(queue[0]):
-        list = merge(queue.pop(0),list)
-    queue.insert(0,list)
-    return queue
 
-def merge_queue3(queue, list):
+class Merger:
+    """Abstract base class for merging algorithms."""
+    def merge(self, sequence):
+        """Merge the sequence into the current state.
+        
+        Args:
+            sequence: The sequence to merge.
+        """
+        raise NotImplementedError
+    
+    def collapse(self):
+        """Return the merged list and clear interal data."""
+        raise NotImplementedError
+    
+class SimpleMerger(Merger):
+    """Simple merger that uses a list to store the merged data."""
+    def __init__(self):
+        self.data = []
+    
+    def merge(self, sequence):
+        self.data = mergeArrays(self.data, sequence)
+        global max_queue_size
+    
+    def collapse(self):
+        res = self.data
+        self.data = []
+        return res
+    
+class LengthQueueMerger(Merger):
+    """The queues cointains lists of increasing length
+    say, [ [1], [2,3], [4,5,6,7,8]],
+    Each item in the list is compare in turn, if its length is less than
+    or equal the length of the input list, then the two lists are merge and the 
+    result become the new input, tested against the next item in the list.
+    For example if the input is [9] it is first compared with [1], their lengths
+    are the same, so they are merged to form [1,9], 
+    and the list [1] removed from the queue. 
+    It is then compared with [2,3] again they are merged to form [1,2,3,9]. 
+    In the next comparision the input is shorter, 
+    so it is pushed to the from of the queue: [[1,2,3,9], [4,5,6,7,8]]. 
+    This has better complexity, probably O(n log n). 
+   """
+    def __init__(self):
+        self.queue = []
+    
+    def merge(self, sequence):
+        while len(self.queue) > 0 and len(sequence) >= len(self.queue[0]):
+            sequence = mergeArrays(self.queue.pop(0),sequence)
+        self.queue.insert(0,sequence)
+   
+    def collapse(self):
+        res = []
+        for ele in self.queue: 
+            res = mergeArrays(res,ele)
+        self.queue.clear()
+        return res
+
+class dequeMerger(Merger):
+    def __init__(self):
+        self.queue = deque()
+
+    def merge(self, sequence):
+        while len(self.queue) > 0 and len(sequence) >= len(self.queue[0]):
+            sequence = mergeArrays(self.queue.popleft(),sequence)
+        self.queue.appendleft(sequence)
+
+    def collapse(self):
+        res = []
+        for ele in self.queue: 
+            res = mergeArrays(res,ele)
+        self.queue.clear()
+        return res
+
+class TreeQueueMerger(Merger):
     """merger a list into a queue of lists
     A possibly more efficient version of merge_queue, 
     that aims to remove the O(n) operation pop(0) and insert(0, v).  
@@ -216,40 +280,36 @@ def merge_queue3(queue, list):
     the second elements is tested. A second merge is performed and the result
     [abcd] is added to end of the queue, giving a final queue of [None,None,[abcd]]
     """
-    index = 0
-    for ele in queue:
-        if ele == None:
-            queue[index] = list
-            return queue
-        list = merge(ele,list)
-        queue[index] = None
-        index += 1    
-    queue.append(list)
-    return queue
+    def __init__(self):
+        self.queue = []
 
-def collapse_queue(queue):
-    """ meger all the lists in the queue into a single list """
-    res = []
-    for ele in queue: 
-        res = merge(res,ele)
-    queue.clear()
-    return res
+    def merge(self, sequence):
+        index = 0
+        for ele in self.queue:
+            if ele == None:
+                self.queue[index] = sequence
+                return 
+            sequence = mergeArrays(ele,sequence)
+            self.queue[index] = None
+            index += 1    
+        self.queue.append(sequence)
 
-def collapse_queue3(queue):
-    """ meger all the lists in the queue into a single list """
-    res = []
-    for ele in queue: 
-        if ele != None:
-            res = merge(res,ele)
-    queue.clear()
-    return res
+    def collapse(self):
+        res = []
+        for ele in self.queue: 
+            if ele != None:
+                res = mergeArrays(res,ele)
+        self.queue.clear()
+        return res
 
-def updown_sort(arr):
+def updown_sort(arr,merger):
+    global max_queue_size
     dir = 1
     last = arr[0]
     queue = []
     start = 0
     end = 0
+    max_queue_size = 0
     for x in arr:
         if ( dir == 1 and x >= last ) or ( dir == -1 and x <= last ):
             pass
@@ -258,7 +318,7 @@ def updown_sort(arr):
                 work = arr[end-1:start-1:-1]
             else:
                 work = arr[start:end]
-            merge_queue(queue,work)
+            merger.merge(work)
             start = end
             dir = - dir
         last = x
@@ -268,39 +328,11 @@ def updown_sort(arr):
         work = arr[end-1:start-1:-1]
     else:
         work = arr[start:end]
-    merge_queue(queue,work)
+    merger.merge(work)
 
-    res = collapse_queue(queue)
+    res = merger.collapse()
     return res
 
-def updown_sort2(arr):
-    dir = 1
-    last = arr[0]
-    queue = []
-    start = 0
-    end = 0
-    for x in arr:
-        if ( dir == 1 and x >= last ) or ( dir == -1 and x <= last ):
-            pass
-        else:
-            if dir == -1:
-                work = arr[end-1:start-1:-1]
-            else:
-                work = arr[start:end]
-            merge_queue3(queue,work)
-            start = end
-            dir = - dir
-        last = x
-        end += 1
-
-    if dir == -1:
-        work = arr[end-1:start-1:-1]
-    else:
-        work = arr[start:end]
-    merge_queue3(queue,work)
-
-    res = collapse_queue3(queue)
-    return res
 
 def updown_sort_old(arr):
     dir = 1
@@ -314,13 +346,13 @@ def updown_sort_old(arr):
         else:
             if dir == -1:
                 work.reverse()
-            res = merge(res, work)
+            res = mergeArrays(res, work)
             work = [x]
             dir = - dir
         last = x
     if dir == -1:
         work.reverse()
-    res = merge(res, work)
+    res = mergeArrays(res, work)
     return res
 
 def cheat_sort(arr):
@@ -369,23 +401,27 @@ def heep_sort(arr,nbins):
 def sorting_test(alg_no,orig):
     data=orig[:] # copy the original list
     t0 = time.perf_counter() # get time before sorting
-    if alg_no == 1:
+    if alg_no == '1':
         bubbleSort(data)
-    elif alg_no == 2:
+    elif alg_no == '2':
         inPlaceQuickSort(data,0,len(data)-1)
-    elif alg_no == 3:
+    elif alg_no == '3':
         mergeSort(data) # merge sort algorithm in code
-    elif alg_no == 4:
+    elif alg_no == '4':
         data.sort()   # standard sort provided by pythons
-    elif alg_no == 5:
+    elif alg_no == '5':
         data = treeSort(orig)
-    elif alg_no == 6:
+    elif alg_no == '6':
         data = fivelinequicksort(orig)
-    elif alg_no == 7:
-        data = updown_sort(data)
+    elif alg_no == '7a':
+        data = updown_sort(data,SimpleMerger())
+    elif alg_no == '7b':
+        data = updown_sort(data,LengthQueueMerger())
+    elif alg_no == '7c':
+        data = updown_sort(data,TreeQueueMerger())
+    elif alg_no == '7d':
+        data = updown_sort(data,dequeMerger())
     elif alg_no == 8:
-        data = updown_sort2(data)
-    elif alg_no == 9:
         data = cheat_sort(data)
     else:
         print("No algorithm selected")
@@ -449,7 +485,7 @@ def data_from_input(line):
 if __name__ == '__main__':
 
     if(len(sys.argv) == 3):
-        alg_no = int(sys.argv[1])
+        alg_no = sys.argv[1]
         line = sys.argv[2]
         data = data_from_input(line)
         sorting_test(alg_no,data)
@@ -468,9 +504,11 @@ if __name__ == '__main__':
     print("  4 - python's default sort")
     print("  5 - tree sort")
     print("  6 - five line quick sort")
-    print("  7 - up-down sort")
-    print("  8 - up-down sort v2")
-    print("  9 - cheat sort")
+    print("  7a - up-down sort, simple merger")
+    print("  7b - up-down sort, length queue merger")
+    print("  7c - up-down sort, tree queue merger")
+    print("  7d - up-down sort, deque merger")
+    print("  8 - cheat sort")
     code = int(input("Enter code "))
     while True:
 
