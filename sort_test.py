@@ -14,13 +14,13 @@ class TestSort(unittest.TestCase):
         res = updown_sort(data, SimpleMerger())
         self.assertEqual(res, copy)
 
-    def test_updown_sort_length_queue(self):
+    def test_updown_sort_increaing_length_merger(self):
         data = [8564, 62296, 81562, 23658, 45323, 78247, 83829, 76408, 87461]
 
         #data = [57733, 47474, 33893, 62684, 21200, 10722, 54591, 34511, 91722, 9023, 56476, 73120, 29644, 14380, 94256, 23634, 54590, 55343, 32431, 4019]
         copy = data[:]
         copy.sort()
-        res = updown_sort(data, LengthQueueMerger())
+        res = updown_sort(data, IncreasingLengthMerger())
         self.assertEqual(res, copy)
 
     def test_updown_sort_tree_queue(self):
@@ -29,7 +29,7 @@ class TestSort(unittest.TestCase):
         #data = [57733, 47474, 33893, 62684, 21200, 10722, 54591, 34511, 91722, 9023, 56476, 73120, 29644, 14380, 94256, 23634, 54590, 55343, 32431, 4019]
         copy = data[:]
         copy.sort()
-        res = updown_sort(data, TreeQueueMerger())
+        res = updown_sort(data, TreeMerger())
         self.assertEqual(res, copy)
 
     def test_updown_sort_dequeue(self):

@@ -187,7 +187,7 @@ class Merger:
         """Merge the sequence into the current state.
         
         Args:
-            sequence: The sequence to merge.
+            sequence: a sorted list to be merged in.
         """
         raise NotImplementedError
     
@@ -209,8 +209,8 @@ class SimpleMerger(Merger):
         self.data = []
         return res
     
-class LengthQueueMerger(Merger):
-    """The queues cointains lists of increasing length
+class IncreasingLengthMerger(Merger):
+    """The merger contains lists of increasing length
     say, [ [1], [2,3], [4,5,6,7,8]],
     Each item in the list is compare in turn, if its length is less than
     or equal the length of the input list, then the two lists are merge and the 
@@ -239,7 +239,7 @@ class LengthQueueMerger(Merger):
         return res
 
 class DequeMerger(Merger):
-    """A versions of the LengthQueueMerger that uses a deque.
+    """A versions of the IncreasingLengthMerger that uses a deque.
     """
     def __init__(self):
         self.queue = deque()
@@ -256,31 +256,27 @@ class DequeMerger(Merger):
         self.queue.clear()
         return res
 
-class TreeQueueMerger(Merger):
-    """merger a list into a queue of lists
-    A possibly more efficient version of merge_queue, 
-    that aims to remove the O(n) operation pop(0) and insert(0, v).  
-    Here the entries in the queue are either a list or None.
-    When adding a list each element is tested in turn,
-    if its None it is replaced with the list and the function returns. 
-    If it is a list the element is replaced by Node
-    and element is merged into the incoming list.
-    If the end of the list is reached the incoming list is added to the queue.
-    In effect this mimics the behaviour of merge sort, with pairs of
-    elements megered in the first level, quartets in the second level etc.
-    It can also be through of as a binary tree, with items added at the bottom of the 
-    tree and the parent node containing the the result of merging
-    the two children. 
+class TreeMerger(Merger):
+    """
+    This merger mirrors the tree structure you find with merge sort.
+    Conceptually it works as a binary tree built from the bottom up. 
+    Elements are added at the bottom of a binary tree, the parent of each pair 
+    contains the result of merging the two children. So the top of the 
+    tree contains the sorted list. In practice we don't need the whole tree, 
+    as soon as two child nodes are present the parent can be calculate 
+    and the children removed. The partially compleated tree can be 
+    represented as an array where the i-th element is the node at height i, measured from the bottom. 
+    This can either be a sorted list or None, if its parent has been calculated.
 
-    Consider repeatidly adding lists [a],[b],[c],[d].
-    The queue is intially empty [], after adding [a] it is [a].
-    After adding [b] it is [None,[ab]], first [b] is merged with [a]
+    Consider repeatidly adding sequences [a],[b],[c],[d]. 
+    The list is intially empty [], after adding [a] it is [[a]].
+    After adding [b] it is [None,[a,b]], first [b] is merged with [a]
     the first element set to None, and the merged list [a,b]
     added at the end of the queue. Adding [c] sets the first element to None
     giving [[c],[ab]]. Adding [d] first merges it with [c], giving the list
     [cd], the first element is set to None and
-    the second elements is tested. A second merge is performed and the result
-    [abcd] is added to end of the queue, giving a final queue of [None,None,[abcd]]
+    the second elements is tested. A second merge is performed and the result[abcd] 
+    is added to end of the queue, giving a final queue of [None,None,[abcd]].
     """
     def __init__(self):
         self.queue = []
@@ -402,7 +398,16 @@ def heep_sort(arr,nbins):
         res += b
     return res
 
-
+def dump(filename,original,actual=None,expected=None):
+    with open(filename,"w") as f:
+        f.write("Original data\n")
+        f.write(str(original))
+        if actual is not None:
+            f.write("\nSorted data\n")
+            f.write(str(actual))
+        if expected is not None:
+            f.write("\nPython sorted data\n")
+            f.write(str(expected))
 
 # function to test sorting
 def sorting_test(alg_no,orig):
@@ -423,13 +428,16 @@ def sorting_test(alg_no,orig):
     elif alg_no == '7a':
         data = updown_sort(data,SimpleMerger())
     elif alg_no == '7b':
-        data = updown_sort(data,LengthQueueMerger())
+        data = updown_sort(data,IncreasingLengthMerger())
     elif alg_no == '7c':
-        data = updown_sort(data,TreeQueueMerger())
+        data = updown_sort(data,TreeMerger())
     elif alg_no == '7d':
         data = updown_sort(data,DequeMerger())
-    elif alg_no == 8:
+    elif alg_no == '8':
         data = cheat_sort(data)
+    elif alg_no == 'd':
+        dump("dump.txt",orig)
+        sys.exit(0)
     else:
         print("No algorithm selected")
     if len(data) <= 10:
@@ -449,13 +457,7 @@ def sorting_test(alg_no,orig):
         print("Not correctly sorted")
         print("Original data",len(orig))
         print("Sorted data  ",len(data))
-        with open("error.txt","w") as f:
-            f.write("Original data\n")
-            f.write(str(orig))
-            f.write("\nSorted data\n")
-            f.write(str(data))
-            f.write("\nPython sorted data\n")
-            f.write(str(copy))
+        dump("error.txt",orig,data,copy)
         sys.exit(1)
 
 def read_file(filename):
@@ -498,10 +500,10 @@ if __name__ == '__main__':
         sorting_test(alg_no,data)
         sys.exit(0)
     if( len(sys.argv) == 4 ):
-        num_eles = int(sys.argv[1])
+        alg_no = sys.argv[1]
         num_eles = int(sys.argv[2])
         data = read_file(sys.argv[3])
-        sorting_test(2,data)
+        sorting_test(alg_no,data)
         sys.exit(0)
 
     print("Select the type of sort:")
@@ -516,7 +518,8 @@ if __name__ == '__main__':
     print("  7c - up-down sort, tree queue merger")
     print("  7d - up-down sort, deque merger")
     print("  8 - cheat sort")
-    code = int(input("Enter code "))
+    print("  d - dump the data to the data.txt file")
+    code = input("Enter code ")
     while True:
 
         line  = input("Enter number of elements up to 10000, -1 to exit, p 10 50 for 10 sorted lists of 50 elements concatinated: ")
