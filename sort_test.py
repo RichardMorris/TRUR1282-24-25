@@ -40,3 +40,60 @@ class TestSort(unittest.TestCase):
         copy.sort()
         res = updown_sort(data, DequeMerger())
         self.assertEqual(res, copy)
+
+    def test_updown_sort_single_item_list_simple(self):
+        data = [3]
+        copy = data[:]
+        copy.sort()
+        res = updown_sort(data, SimpleMerger())
+        self.assertEqual(res, copy)
+
+    def test_updown_sort_single_item_list_increasing(self):
+        # arrange
+        data = [3]
+        copy = data[:]
+        copy.sort()
+
+        # act
+        res = updown_sort(data, IncreasingLengthMerger())
+
+        #assert
+        self.assertEqual(res, copy)
+
+    def test_updown_sort_zero_item_list_simple(self):
+        # arrange
+        data = []
+        copy = data[:]
+        copy.sort()
+
+        # act
+        res = updown_sort(data, SimpleMerger())
+
+        #assert
+        self.assertEqual(res, copy)
+
+    def test_updown_sort_single_item_list_tree(self):
+        data = [3]
+        copy = data[:]
+        copy.sort()
+        res = updown_sort(data, TreeMerger())
+        self.assertEqual(res, copy)
+
+    def test_updown_sort_zero_item_list_increasing(self):
+        # arrange
+        data = []
+        copy = data[:]
+        copy.sort()
+
+        # act
+        res = updown_sort(data, IncreasingLengthMerger())
+
+        #assert
+        self.assertEqual(res, copy)
+
+    def test_updown_sort_zero_item_list_tree(self):
+        data = []
+        copy = data[:]
+        copy.sort()
+        res = updown_sort(data, TreeMerger())
+        self.assertEqual(res, copy)

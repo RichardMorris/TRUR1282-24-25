@@ -308,6 +308,8 @@ def updown_sort(arr,merger):
         merger: The merging algorithm to use.   """
     global max_queue_size
     dir = 1
+    if len(arr) == 0:
+        return arr
     last = arr[0]
     queue = []
     start = 0
